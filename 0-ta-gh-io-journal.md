@@ -13,4 +13,14 @@ In other words, every major topic is its own repo, and within that it has archiv
 
 Eventually each topic gets a sub-topic, and that gets its own archive.
 
+* Bring journal and/or personal items over from TA pages.
+* Bring items over from previous TA year repos. Especially things I'm or have been interested in
+* Bring things in from qData.
+
+What to put here and as part of the journal, just like the things up above, and what to put in agenda. Perhaps the talk here is about identifying the problem. Setting up the vision. And the agenda is more targets and metrics.
+
+In all of this, I need to build up on established routines such as creating agenda and journal files for each significant folder or repository.
+
+
+
 
