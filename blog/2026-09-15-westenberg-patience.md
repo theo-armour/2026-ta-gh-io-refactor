@@ -56,4 +56,29 @@ It's perhaps about discovering the joy of rolling the rock up the hill.
 
 The forced patience of growing old. Meaning in a reduced pattern set 
 
-The thrill of writing. Looking at thinking as a dining room conversation, as daydreaming while I'm walking, and as setting down marks on a computer screen 
+As you age. you **must** plan to do less if you are to continue to do new, curious things, because getting through life takes more time. No longer a second or two to stand up, but perhaps dozens. many things sisyphus like. waiting for the poo. etc.
+
+***
+
+The thrill of writing. Looking at thinking as a dining room conversation, as daydreaming while I'm walking, and as setting down marks on a computer screen. 
+
+conversing with people. so frustrating. conversations that click, that get you in the "zone": so rare. The Socratic dialog. Will I ever have one in my entire life?
+
+the walk up Fransisco: Daydreams. Endless repetitions of banal thoughts. Thank goodness, like the shower: occasional lightbulbs turning on / flashes of a joyful observation / he he, brilliant thought
+
+But, now, writing. Oh my! Where have you been. makes me think of the long faxes I sometimes sent to Jim Michler.
+
+for sure my brain "holds" four to seven tokens at once.  
+
+https://en.wikipedia.org/wiki/Working_memory
+
+The text on the page provides clues to what is in my activated long term memory. 
+
+The text I write creates a dialog with myself. I become my own socrates. The issue is that this Socrates is too much like me of course. He struggles with proving me wrong. 
+
+Well I have wandered from the Westenberg Patience thought. 
+
+Patience is a pattern that has become well-established. growing old requires new patterns - new patience. This writing thing is becoming a new pattern. a new way of becoming patient. but the twist is that writing is becoming fun, even thrilling. 
+
+Thus the pattern becomes a thing of beauty, an aspect of a psychologically rich life. An aspect of an eternal joy, perhaps? The ultimate gradient descent vector?
+
