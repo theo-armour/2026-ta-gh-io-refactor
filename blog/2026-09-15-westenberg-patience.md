@@ -82,3 +82,5 @@ Patience is a pattern that has become well-established. growing old requires new
 
 Thus the pattern becomes a thing of beauty, an aspect of a psychologically rich life. An aspect of an eternal joy, perhaps? The ultimate gradient descent vector?
 
+* https://en.wikipedia.org/wiki/Gradient_descent
+
