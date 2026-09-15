@@ -1,5 +1,11 @@
 # 2026-09-15
 
+Your Edge Is Patience, Not Genius
+
+Raw brainpower is overrated
+
+https://substack.com/home/post/p-215589276
+
 This is another one of Joan's posts where she takes a single thought in a single word and just embeds it into the grid. 
 
 This post is about patience. It's all right, and it's all good, but boy, it sort of took patience to get through the whole blog post. 
