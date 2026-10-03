@@ -1,6 +1,6 @@
-# 2025
+# 2026
 
-We are alive in 2025
+We are alive in 2026
 
 * https://github.com/theo-armour
 * https://x.com/ta
@@ -16,6 +16,13 @@ We are alive in 2025
 * And a work-in-progress bio: https://theo-armour.github.io/2025/#about/theo.md
 * tarmour at gmail dot com
 * Hundreds more of my links still to be added...
+
+## 2026-09-30
+
+Former architect, perpetual software developer, and lifelong learner.
+
+I'm currently working on what may be my final design: my afterlife. ;-)
+
 
 ## 2025-05-24
 
