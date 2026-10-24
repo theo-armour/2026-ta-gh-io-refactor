@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Theo Armour ~ decades of repositories and organizations as a spinning 3D sphere">
+<meta name="revised" content="2026-10-23 22:12">
+<title>Theo Armour ~ 3D Happy Place</title>
+<link rel="icon" href="favicon.ico">
+
+<style>
+	:root {
+		--color-bg: #0b0e1a;
+		--color-bg-glow: #1a2140;
+		--color-text: #dde4f5;
+		--color-text-soft: #8d97b5;
+		--color-accent: #ffb347;
+		--color-org: #c9a0ff;
+		--color-repo: #7fc4ff;
+		--color-fork: #a8c47f;
+		--color-orgrepo: #5f6c8f;
+		--color-panel: rgba(16, 20, 38, 0.88);
+		--color-panel-border: #2c3558;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		background: radial-gradient(ellipse at 50% 40%, var(--color-bg-glow), var(--color-bg) 70%);
+		color: var(--color-text);
+		font-family: system-ui, sans-serif;
+		height: 100vh;
+		margin: 0;
+		overflow: hidden;
+	}
+
+	header {
+		left: 0;
+		padding: 1rem 1.2rem 0;
+		position: fixed;
+		right: 0;
+		text-align: center;
+		top: 0;
+		z-index: 2000;
+		pointer-events: none;
+	}
+
+	header a, header button { pointer-events: auto; }
+
+	h1 {
+		font-family: Georgia, serif;
+		font-size: 1.5rem;
+		font-weight: normal;
+		letter-spacing: 0.04em;
+		margin: 0;
+	}
+
+	.subtitle {
+		color: var(--color-text-soft);
+		font-size: 0.8rem;
+		margin: 0.2rem 0 0.6rem;
+	}
+
+	.subtitle a { color: var(--color-accent); text-decoration: none; }
+	.subtitle a:hover { text-decoration: underline; }
+
+	/* ~ legend chips double as show/hide filters ~ */
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		justify-content: center;
+	}
+
+	.filters button {
+		background: var(--color-panel);
+		border: 1px solid var(--color-panel-border);
+		border-radius: 999px;
+		color: var(--color-text);
+		cursor: pointer;
+		font-size: 0.75rem;
+		padding: 0.25rem 0.8rem;
+	}
+
+	.filters button.off {
+		color: var(--color-text-soft);
+		opacity: 0.45;
+		text-decoration: line-through;
+	}
+
+	/* ~ the sphere lives here; items are absolutely positioned anchors ~ */
+	#sky {
+		cursor: grab;
+		height: 100vh;
+		position: relative;
+		width: 100vw;
+	}
+
+	#sky.dragging { cursor: grabbing; }
+
+	.item {
+		color: var(--color-orgrepo);
+		left: 50%;
+		position: absolute;
+		text-decoration: none;
+		top: 50%;
+		white-space: nowrap;
+		will-change: transform, opacity;
+	}
+
+	.item:hover { color: #ffffff !important; }
+
+	.item-org { color: var(--color-org); font-size: 17px; font-weight: 600; }
+	.item-repo { color: var(--color-repo); font-size: 13px; }
+	.item-fork { color: var(--color-fork); font-size: 12px; }
+	.item-orgrepo { color: var(--color-orgrepo); font-size: 10.5px; }
+	.item-pick { color: var(--color-accent); font-size: 19px; font-weight: 700; text-shadow: 0 0 14px rgba(255, 179, 71, 0.6); }
+
+	/* ~ details of whatever the pointer rests on ~ */
+	#caption {
+		background: var(--color-panel);
+		border: 1px solid var(--color-panel-border);
+		border-radius: 10px;
+		bottom: 1rem;
+		left: 50%;
+		max-width: 34rem;
+		padding: 0.7rem 1.1rem;
+		position: fixed;
+		text-align: center;
+		transform: translateX(-50%);
+		visibility: hidden;
+		width: calc(100vw - 2rem);
+		z-index: 2000;
+	}
+
+	#caption .caption-name { color: var(--color-accent); font-weight: 600; }
+	#caption .caption-desc { font-size: 0.85rem; margin: 0.2rem 0; }
+	#caption .caption-meta { color: var(--color-text-soft); font-size: 0.75rem; }
+
+	#hint {
+		bottom: 1rem;
+		color: var(--color-text-soft);
+		font-size: 0.75rem;
+		left: 0;
+		position: fixed;
+		right: 0;
+		text-align: center;
+		z-index: 1999;
+	}
+</style>
+</head>
+
+<body>
+
+<header>
+	<h1>🌐 Theo Armour ~ 3D Happy Place</h1>
+	<p class="subtitle">Decades of repos &amp; orgs on one spinning sphere · <a href="index.html">🗄️ back to the Shelf</a></p>
+	<nav class="filters" id="filtersNav"></nav>
+</header>
+
+<div id="sky"></div>
+
+<div id="caption">
+	<div class="caption-name"></div>
+	<div class="caption-desc"></div>
+	<div class="caption-meta"></div>
+</div>
+
+<p id="hint">drag to spin · scroll to zoom · hover to read · click to visit</p>
+
+<script src="ta-data.js"></script>
+<script>
+
+// ~ all page state in one place ~
+const state = {
+	items: [],          // { entry-ish fields + x0, y0, z0 home position + el }
+	yaw: 0,             // rotation around the vertical axis
+	pitch: -0.25,       // rotation around the horizontal axis
+	spinYaw: 0.0022,    // idle spin per frame
+	velocityYaw: 0,
+	velocityPitch: 0,
+	zoom: 1,
+	dragging: false,
+	hovering: false,
+	lastPointer: { x: 0, y: 0 },
+	show: { org: true, repo: true, orgrepo: true },
+};
+
+const CAMERA_DISTANCE = 3.2; // in sphere radii, for perspective
+
+init();
+
+function init () {
+
+	if ( typeof TA_DATA === "undefined" ) {
+
+		document.getElementById( "hint" ).textContent = "Could not load ta-data.js ~ is the file next to sphere.html?";
+		return;
+
+	}
+
+	buildItems();
+	placeOnSphere();
+	renderItems();
+	renderFilters();
+	addListeners();
+	requestAnimationFrame( animate );
+
+}
+
+// ~ flatten repos, orgs and every org's repos into one list ~
+function buildItems () {
+
+	for ( const entry of TA_DATA.entries ) {
+
+		state.items.push( {
+			kind: entry.type, // repo | org | fork
+			name: entry.name,
+			url: entry.url,
+			description: entry.description || "",
+			year: entry.created.slice( 0, 4 ),
+			stars: entry.stars || 0,
+			pick: entry.pick,
+			note: entry.note || "",
+			org: "",
+		} );
+
+		if ( entry.type !== "org" || !entry.repoList ) { continue; }
+
+		for ( const repo of entry.repoList ) {
+
+			state.items.push( {
+				kind: "orgrepo",
+				name: repo.name,
+				url: repo.url,
+				description: repo.description || "",
+				year: repo.updated.slice( 0, 4 ),
+				stars: repo.stars || 0,
+				pick: false,
+				note: "",
+				org: entry.name,
+			} );
+
+		}
+
+	}
+
+}
+
+// ~ a Fibonacci spiral spreads points evenly over the sphere ~
+function placeOnSphere () {
+
+	const goldenAngle = Math.PI * ( 3 - Math.sqrt( 5 ) );
+	const count = state.items.length;
+
+	state.items.forEach( ( item, i ) => {
+
+		const y = 1 - 2 * ( i + 0.5 ) / count;
+		const ringRadius = Math.sqrt( 1 - y * y );
+		const angle = i * goldenAngle;
+
+		item.x0 = Math.cos( angle ) * ringRadius;
+		item.y0 = y;
+		item.z0 = Math.sin( angle ) * ringRadius;
+
+	} );
+
+}
+
+function renderItems () {
+
+	const sky = document.getElementById( "sky" );
+
+	for ( const item of state.items ) {
+
+		const el = document.createElement( "a" );
+		el.className = item.pick ? "item item-pick" : `item item-${ item.kind }`;
+		el.href = item.url;
+		el.textContent = ( item.kind === "org" ? "🏛️ " : "" ) + ( item.pick ? "⭐ " : "" ) + item.name;
+		el.dataset.index = state.items.indexOf( item );
+		sky.appendChild( el );
+		item.el = el;
+
+	}
+
+}
+
+function renderFilters () {
+
+	const counts = { org: 0, repo: 0, orgrepo: 0 };
+	state.items.forEach( item => counts[ filterGroup( item ) ]++ );
+
+	document.getElementById( "filtersNav" ).innerHTML = `
+		<button data-group="org">🏛️ ${ counts.org } orgs</button>
+		<button data-group="repo">📦 ${ counts.repo } my repos</button>
+		<button data-group="orgrepo">📚 ${ counts.orgrepo } org repos</button>`;
+
+}
+
+function filterGroup ( item ) {
+
+	if ( item.kind === "org" ) { return "org"; }
+	if ( item.kind === "orgrepo" ) { return "orgrepo"; }
+	return "repo"; // repos and forks share a chip
+
+}
+
+// ~ rotate, project and paint every visible item, every frame ~
+function animate () {
+
+	if ( !state.dragging ) {
+
+		state.yaw += state.velocityYaw + ( state.hovering ? 0 : state.spinYaw );
+		state.pitch += state.velocityPitch;
+		state.velocityYaw *= 0.95;
+		state.velocityPitch *= 0.95;
+		state.pitch = Math.max( -1.4, Math.min( 1.4, state.pitch ) );
+
+	}
+
+	const radius = Math.min( window.innerWidth, window.innerHeight ) * 0.36 * state.zoom;
+	const cosYaw = Math.cos( state.yaw ), sinYaw = Math.sin( state.yaw );
+	const cosPitch = Math.cos( state.pitch ), sinPitch = Math.sin( state.pitch );
+
+	for ( const item of state.items ) {
+
+		if ( !state.show[ filterGroup( item ) ] ) {
+
+			item.el.style.display = "none";
+			continue;
+
+		}
+
+		// rotate the home position by yaw then pitch
+		const x1 = item.x0 * cosYaw + item.z0 * sinYaw;
+		const z1 = -item.x0 * sinYaw + item.z0 * cosYaw;
+		const y2 = item.y0 * cosPitch - z1 * sinPitch;
+		const z2 = item.y0 * sinPitch + z1 * cosPitch;
+
+		// simple perspective: nearer items are larger and brighter
+		const scale = CAMERA_DISTANCE / ( CAMERA_DISTANCE - z2 );
+		const px = x1 * radius * scale;
+		const py = -y2 * radius * scale;
+
+		item.el.style.display = "";
+		item.el.style.transform = `translate(-50%, -50%) translate(${ px.toFixed( 1 ) }px, ${ py.toFixed( 1 ) }px) scale(${ scale.toFixed( 3 ) })`;
+		item.el.style.opacity = ( 0.25 + 0.75 * ( z2 + 1 ) / 2 ).toFixed( 2 );
+		item.el.style.zIndex = Math.round( ( z2 + 1 ) * 500 );
+		item.el.style.pointerEvents = z2 > 0 ? "auto" : "none"; // only the near side is clickable
+
+	}
+
+	requestAnimationFrame( animate );
+
+}
+
+function onPointerDown ( event ) {
+
+	state.dragging = true;
+	state.lastPointer = { x: event.clientX, y: event.clientY };
+	document.getElementById( "sky" ).classList.add( "dragging" );
+
+}
+
+function onPointerMove ( event ) {
+
+	if ( !state.dragging ) { return; }
+
+	const dx = event.clientX - state.lastPointer.x;
+	const dy = event.clientY - state.lastPointer.y;
+	state.lastPointer = { x: event.clientX, y: event.clientY };
+
+	state.yaw += dx * 0.005;
+	state.pitch += dy * 0.005;
+	state.velocityYaw = dx * 0.0006;
+	state.velocityPitch = dy * 0.0006;
+
+}
+
+function onPointerUp () {
+
+	state.dragging = false;
+	document.getElementById( "sky" ).classList.remove( "dragging" );
+
+}
+
+function onWheel ( event ) {
+
+	event.preventDefault();
+	state.zoom = Math.max( 0.5, Math.min( 2.6, state.zoom * ( event.deltaY < 0 ? 1.08 : 0.93 ) ) );
+
+}
+
+function onItemHover ( event ) {
+
+	const el = event.target.closest( ".item" );
+	if ( !el ) { return; }
+
+	state.hovering = true;
+	const item = state.items[ Number( el.dataset.index ) ];
+
+	const caption = document.getElementById( "caption" );
+	caption.querySelector( ".caption-name" ).textContent = item.name;
+	caption.querySelector( ".caption-desc" ).textContent = item.note || item.description || "";
+	caption.querySelector( ".caption-meta" ).textContent = [
+		item.org ? `in 🏛️ ${ item.org }` : item.kind,
+		item.year,
+		item.stars ? `★ ${ item.stars }` : "",
+		"click to open on GitHub",
+	].filter( Boolean ).join( " · " );
+	caption.style.visibility = "visible";
+
+}
+
+function onItemLeave ( event ) {
+
+	if ( !event.target.closest || !event.target.closest( ".item" ) ) { return; }
+
+	state.hovering = false;
+	document.getElementById( "caption" ).style.visibility = "hidden";
+
+}
+
+function onFilterClick ( event ) {
+
+	const button = event.target.closest( "button[data-group]" );
+	if ( !button ) { return; }
+
+	const group = button.dataset.group;
+	state.show[ group ] = !state.show[ group ];
+	button.classList.toggle( "off", !state.show[ group ] );
+
+}
+
+function addListeners () {
+
+	const sky = document.getElementById( "sky" );
+	sky.addEventListener( "pointerdown", onPointerDown );
+	window.addEventListener( "pointermove", onPointerMove );
+	window.addEventListener( "pointerup", onPointerUp );
+	sky.addEventListener( "wheel", onWheel, { passive: false } );
+	sky.addEventListener( "mouseover", onItemHover );
+	sky.addEventListener( "mouseout", onItemLeave );
+	document.getElementById( "filtersNav" ).addEventListener( "click", onFilterClick );
+
+}
+
+</script>
+
+</body>
+</html>

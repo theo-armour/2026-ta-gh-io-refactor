@@ -9,9 +9,9 @@ We are alive in 2026
 * https://www.reddit.com/user/theo/
 * https://substack.com/@theoarmour
 * https://medium.com/@ta
-* https://wordpress.com/reader/users/theoa
+* https://theoa.wordpress.com/
 * https://www.youtube.com/@theoarmour
-* https://t.me/theo_armour
+* https://t.me/theo_armour ~ telegram
 * My house: https://heritageonthemarina.org/
 * And a work-in-progress bio: https://theo-armour.github.io/2025/#about/theo.md
 * tarmour at gmail dot com

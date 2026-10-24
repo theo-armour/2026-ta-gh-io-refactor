@@ -2,7 +2,6 @@
 
 ## 2026-08-10
 
-
 Created new GitHub Theo Armour Refactor repo
 
 I'm thinking about using this as the base of operations for, at the beginning of, documenting my life again, once more.
@@ -20,7 +19,3 @@ Eventually each topic gets a sub-topic, and that gets its own archive.
 What to put here and as part of the journal, just like the things up above, and what to put in agenda. Perhaps the talk here is about identifying the problem. Setting up the vision. And the agenda is more targets and metrics.
 
 In all of this, I need to build up on established routines such as creating agenda and journal files for each significant folder or repository.
-
-
-
-
