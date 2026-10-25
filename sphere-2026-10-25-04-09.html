@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Theo Armour ~ decades of repositories and organizations as a spinning 3D sphere">
-<meta name="revised" content="2026-10-23 22:12">
+<meta name="revised" content="2026-10-23 22:36">
 <title>Theo Armour ~ 3D Happy Place</title>
 <link rel="icon" href="favicon.ico">
 
@@ -22,6 +22,7 @@
 		--color-orgrepo: #5f6c8f;
 		--color-panel: rgba(16, 20, 38, 0.88);
 		--color-panel-border: #2c3558;
+		--font-mono: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
 	}
 
 	* { box-sizing: border-box; }
@@ -29,7 +30,7 @@
 	body {
 		background: radial-gradient(ellipse at 50% 40%, var(--color-bg-glow), var(--color-bg) 70%);
 		color: var(--color-text);
-		font-family: system-ui, sans-serif;
+		font-family: var(--font-mono);
 		height: 100vh;
 		margin: 0;
 		overflow: hidden;
@@ -49,7 +50,6 @@
 	header a, header button { pointer-events: auto; }
 
 	h1 {
-		font-family: Georgia, serif;
 		font-size: 1.5rem;
 		font-weight: normal;
 		letter-spacing: 0.04em;
@@ -167,7 +167,7 @@
 	<div class="caption-meta"></div>
 </div>
 
-<p id="hint">drag to spin · scroll to zoom · hover to read · click to visit</p>
+<p id="hint">click to stop the spin · drag to turn · scroll to zoom · hover to read · click to visit · longitude is time: 2010 → today</p>
 
 <script src="ta-data.js"></script>
 <script>
@@ -178,6 +178,8 @@ const state = {
 	yaw: 0,             // rotation around the vertical axis
 	pitch: -0.25,       // rotation around the horizontal axis
 	spinYaw: 0.0022,    // idle spin per frame
+	autoSpin: true,     // first click anywhere stops it; ▶ chip restarts it
+	suppressClick: false,
 	velocityYaw: 0,
 	velocityPitch: 0,
 	zoom: 1,
@@ -219,6 +221,8 @@ function buildItems () {
 			name: entry.name,
 			url: entry.url,
 			description: entry.description || "",
+			homepage: entry.homepage || "",
+			created: entry.created,
 			year: entry.created.slice( 0, 4 ),
 			stars: entry.stars || 0,
 			pick: entry.pick,
@@ -235,7 +239,9 @@ function buildItems () {
 				name: repo.name,
 				url: repo.url,
 				description: repo.description || "",
-				year: repo.updated.slice( 0, 4 ),
+				homepage: repo.homepage || "",
+				created: repo.created,
+				year: repo.created.slice( 0, 4 ),
 				stars: repo.stars || 0,
 				pick: false,
 				note: "",
@@ -248,23 +254,48 @@ function buildItems () {
 
 }
 
-// ~ a Fibonacci spiral spreads points evenly over the sphere ~
+// ~ longitude is time: 0° = 2010-01-01, 360° = today ~
+// ~ latitude spreads items out so same-year items don't overlap ~
 function placeOnSphere () {
 
-	const goldenAngle = Math.PI * ( 3 - Math.sqrt( 5 ) );
-	const count = state.items.length;
+	const epochStart = new Date( "2010-01-01" ).getTime();
+	const epochSpan = Date.now() - epochStart;
+	const golden = 0.6180339887;
 
 	state.items.forEach( ( item, i ) => {
 
-		const y = 1 - 2 * ( i + 0.5 ) / count;
-		const ringRadius = Math.sqrt( 1 - y * y );
-		const angle = i * goldenAngle;
+		const t = ( new Date( item.created ).getTime() - epochStart ) / epochSpan;
+		const longitude = Math.max( 0, Math.min( 1, t ) ) * Math.PI * 2;
 
-		item.x0 = Math.cos( angle ) * ringRadius;
+		const y = ( ( i * golden ) % 1 ) * 1.9 - 0.95;
+		const ringRadius = Math.sqrt( 1 - y * y );
+
+		item.x0 = Math.cos( longitude ) * ringRadius;
 		item.y0 = y;
-		item.z0 = Math.sin( angle ) * ringRadius;
+		item.z0 = Math.sin( longitude ) * ringRadius;
 
 	} );
+
+}
+
+// ~ the live site for an item: its homepage if sane, else the usual GitHub Pages address ~
+function siteUrl ( item ) {
+
+	const home = ( item.homepage || "" ).trim();
+	if ( home && !home.includes( " " ) ) {
+
+		return home.startsWith( "http" ) ? home : "https://" + home;
+
+	}
+
+	const [ owner, name ] = item.url.replace( "https://github.com/", "" ).split( "/" );
+	if ( !name || name.toLowerCase() === ( owner + ".github.io" ).toLowerCase() ) {
+
+		return `https://${ owner.toLowerCase() }.github.io`;
+
+	}
+
+	return `https://${ owner.toLowerCase() }.github.io/${ name }`;
 
 }
 
@@ -276,7 +307,7 @@ function renderItems () {
 
 		const el = document.createElement( "a" );
 		el.className = item.pick ? "item item-pick" : `item item-${ item.kind }`;
-		el.href = item.url;
+		el.href = siteUrl( item );
 		el.textContent = ( item.kind === "org" ? "🏛️ " : "" ) + ( item.pick ? "⭐ " : "" ) + item.name;
 		el.dataset.index = state.items.indexOf( item );
 		sky.appendChild( el );
@@ -294,7 +325,15 @@ function renderFilters () {
 	document.getElementById( "filtersNav" ).innerHTML = `
 		<button data-group="org">🏛️ ${ counts.org } orgs</button>
 		<button data-group="repo">📦 ${ counts.repo } my repos</button>
-		<button data-group="orgrepo">📚 ${ counts.orgrepo } org repos</button>`;
+		<button data-group="orgrepo">📚 ${ counts.orgrepo } org repos</button>
+		<button id="spinToggle">⏸ spin</button>`;
+
+}
+
+function setAutoSpin ( spinning ) {
+
+	state.autoSpin = spinning;
+	document.getElementById( "spinToggle" ).textContent = spinning ? "⏸ spin" : "▶ spin";
 
 }
 
@@ -311,7 +350,7 @@ function animate () {
 
 	if ( !state.dragging ) {
 
-		state.yaw += state.velocityYaw + ( state.hovering ? 0 : state.spinYaw );
+		state.yaw += state.velocityYaw + ( state.autoSpin && !state.hovering ? state.spinYaw : 0 );
 		state.pitch += state.velocityPitch;
 		state.velocityYaw *= 0.95;
 		state.velocityPitch *= 0.95;
@@ -357,6 +396,14 @@ function animate () {
 
 function onPointerDown ( event ) {
 
+	// the first click only stops the spin; it must not also open a link
+	if ( state.autoSpin ) {
+
+		setAutoSpin( false );
+		state.suppressClick = true;
+
+	}
+
 	state.dragging = true;
 	state.lastPointer = { x: event.clientX, y: event.clientY };
 	document.getElementById( "sky" ).classList.add( "dragging" );
@@ -375,6 +422,9 @@ function onPointerMove ( event ) {
 	state.pitch += dy * 0.005;
 	state.velocityYaw = dx * 0.0006;
 	state.velocityPitch = dy * 0.0006;
+
+	// a real drag should not count as a click on whatever it ends over
+	if ( Math.abs( dx ) + Math.abs( dy ) > 3 ) { state.suppressClick = true; }
 
 }
 
@@ -407,7 +457,7 @@ function onItemHover ( event ) {
 		item.org ? `in 🏛️ ${ item.org }` : item.kind,
 		item.year,
 		item.stars ? `★ ${ item.stars }` : "",
-		"click to open on GitHub",
+		`click → ${ siteUrl( item ).replace( /^https?:\/\//, "" ) }`,
 	].filter( Boolean ).join( " · " );
 	caption.style.visibility = "visible";
 
@@ -424,12 +474,28 @@ function onItemLeave ( event ) {
 
 function onFilterClick ( event ) {
 
+	if ( event.target.closest( "#spinToggle" ) ) {
+
+		setAutoSpin( !state.autoSpin );
+		return;
+
+	}
+
 	const button = event.target.closest( "button[data-group]" );
 	if ( !button ) { return; }
 
 	const group = button.dataset.group;
 	state.show[ group ] = !state.show[ group ];
 	button.classList.toggle( "off", !state.show[ group ] );
+
+}
+
+function onSkyClick ( event ) {
+
+	if ( !state.suppressClick ) { return; }
+
+	event.preventDefault();
+	state.suppressClick = false;
 
 }
 
@@ -440,6 +506,7 @@ function addListeners () {
 	window.addEventListener( "pointermove", onPointerMove );
 	window.addEventListener( "pointerup", onPointerUp );
 	sky.addEventListener( "wheel", onWheel, { passive: false } );
+	sky.addEventListener( "click", onSkyClick );
 	sky.addEventListener( "mouseover", onItemHover );
 	sky.addEventListener( "mouseout", onItemLeave );
 	document.getElementById( "filtersNav" ).addEventListener( "click", onFilterClick );
