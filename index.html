@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Theo Armour ~ decades of repositories, organizations and ideas, gathered onto one shelf">
-<meta name="revised" content="2026-10-24 21:07">
+<meta name="revised" content="2026-10-25 04:09">
 <title>Theo Armour ~ The Shelf</title>
 <link rel="icon" href="favicon.ico">
 
@@ -354,8 +354,12 @@ function init () {
 
 	}
 
+	// ta-data.js keeps repos and orgs apart; the Shelf treats them as one list of material
 	state.meta = TA_DATA.meta;
-	state.entries = TA_DATA.entries;
+	state.entries = [
+		...TA_DATA.repos.map( repo => ( { ...repo, type: repo.fork ? "fork" : "repo" } ) ),
+		...TA_DATA.orgs.map( org => ( { ...org, type: "org" } ) ),
+	].sort( ( a, b ) => a.created.localeCompare( b.created ) );
 	renderPage();
 
 }

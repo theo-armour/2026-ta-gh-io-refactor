@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Theo Armour ~ decades of repositories and organizations as a spinning 3D sphere">
-<meta name="revised" content="2026-10-23 22:36">
+<meta name="revised" content="2026-10-25 04:09">
 <title>Theo Armour ~ 3D Happy Place</title>
 <link rel="icon" href="favicon.ico">
 
@@ -211,10 +211,20 @@ function init () {
 
 }
 
+// ~ ta-data.js keeps repos and orgs apart; this page treats them as one list ~
+function allEntries () {
+
+	return [
+		...TA_DATA.repos.map( repo => ( { ...repo, type: repo.fork ? "fork" : "repo" } ) ),
+		...TA_DATA.orgs.map( org => ( { ...org, type: "org" } ) ),
+	].sort( ( a, b ) => a.created.localeCompare( b.created ) );
+
+}
+
 // ~ flatten repos, orgs and every org's repos into one list ~
 function buildItems () {
 
-	for ( const entry of TA_DATA.entries ) {
+	for ( const entry of allEntries() ) {
 
 		state.items.push( {
 			kind: entry.type, // repo | org | fork
