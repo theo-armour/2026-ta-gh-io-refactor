@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Theo Armour ~ decades of repositories, organizations and ideas, gathered onto one shelf">
-<meta name="revised" content="2026-10-23 22:36">
+<meta name="revised" content="2026-10-24 21:07">
 <title>Theo Armour ~ The Shelf</title>
 <link rel="icon" href="favicon.ico">
 
@@ -459,7 +459,7 @@ function siteUrl ( item ) {
 function renderMetaFoot ( entry ) {
 
 	const stars = entry.stars ? ` ★ ${ entry.stars }` : "";
-	return `<div class="spine-foot"><span>${ entry.created.slice( 0, 4 ) }</span><span><a href="${ entry.url }" title="code on GitHub">&lt;/&gt;</a>${ stars }</span></div>`;
+	return `<div class="spine-foot"><span>${ entry.created.slice( 0, 4 ) }</span><span><a href="${ escapeHtml( entry.url ) }" title="code on GitHub">&lt;/&gt;</a>${ stars }</span></div>`;
 
 }
 
@@ -469,7 +469,7 @@ function renderSpine ( entry ) {
 
 	return `<div class="spine">
 		${ renderBadge( entry ) }
-		<div class="spine-name"><a href="${ siteUrl( entry ) }" title="${ escapeHtml( entry.description ) }">${ entry.name }</a></div>
+		<div class="spine-name"><a href="${ escapeHtml( siteUrl( entry ) ) }" title="${ escapeHtml( entry.description ) }">${ entry.name }</a></div>
 		<div class="spine-desc">${ escapeHtml( entry.description ) }</div>
 		${ renderMetaFoot( entry ) }
 	</div>`;
@@ -484,7 +484,7 @@ function renderFaceOut ( entry ) {
 
 	return `<div class="face-out">
 		${ renderBadge( entry ) }
-		<div class="spine-name"><a href="${ siteUrl( entry ) }">${ entry.name }</a></div>
+		<div class="spine-name"><a href="${ escapeHtml( siteUrl( entry ) ) }">${ entry.name }</a></div>
 		<div class="spine-desc">${ escapeHtml( entry.description ) }</div>
 		${ note }
 		${ renderMetaFoot( entry ) }
@@ -499,11 +499,11 @@ function renderOrgCard ( entry, cardClass ) {
 
 	return `<div class="${ cardClass }">
 		${ renderBadge( entry ) }
-		<div class="spine-name"><a href="${ siteUrl( entry ) }">${ entry.name }</a></div>
+		<div class="spine-name"><a href="${ escapeHtml( siteUrl( entry ) ) }">${ entry.name }</a></div>
 		<div class="spine-desc">${ escapeHtml( entry.description ) }</div>
 		${ note }
 		<div class="spine-foot">
-			<span>${ entry.created.slice( 0, 4 ) } <a href="${ entry.url }" title="org on GitHub">&lt;/&gt;</a></span>
+			<span>${ entry.created.slice( 0, 4 ) } <a href="${ escapeHtml( entry.url ) }" title="org on GitHub">&lt;/&gt;</a></span>
 			<a class="repos-toggle" href="#org-${ entry.name }">📦 ${ entry.repoList.length } repos ↓</a>
 		</div>
 	</div>`;
@@ -514,14 +514,14 @@ function renderOrgPanel ( entry ) {
 
 	const spines = entry.repoList.map( repo =>
 		`<div class="spine mini">
-			<div class="spine-name"><a href="${ siteUrl( repo ) }" title="${ escapeHtml( repo.description ) }">${ repo.name }</a></div>
+			<div class="spine-name"><a href="${ escapeHtml( siteUrl( repo ) ) }" title="${ escapeHtml( repo.description ) }">${ repo.name }</a></div>
 			<div class="spine-desc">${ escapeHtml( repo.description ) }</div>
-			<div class="spine-foot"><span>${ repo.updated.slice( 0, 4 ) }</span><span><a href="${ repo.url }" title="code on GitHub">&lt;/&gt;</a>${ repo.stars ? " ★ " + repo.stars : "" }</span></div>
+			<div class="spine-foot"><span>${ repo.updated.slice( 0, 4 ) }</span><span><a href="${ escapeHtml( repo.url ) }" title="code on GitHub">&lt;/&gt;</a>${ repo.stars ? " ★ " + repo.stars : "" }</span></div>
 		</div>`
 	).join( "" );
 
 	return `<div class="org-panel" id="org-${ entry.name }">
-		<p class="org-panel-title">🏛️ <a href="${ entry.url }">${ entry.name }</a> ~ ${ entry.repoList.length } repositories, most recently active first</p>
+		<p class="org-panel-title">🏛️ <a href="${ escapeHtml( entry.url ) }">${ entry.name }</a> ~ ${ entry.repoList.length } repositories, most recently active first</p>
 		<div class="org-panel-shelf">${ spines }</div>
 	</div>`;
 
